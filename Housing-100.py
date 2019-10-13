@@ -26,5 +26,35 @@ df.describe()
 
 #Visualizaing the dataset
 df.hist(bins=50, figsize=(20,15))
+
 #splitting the data
-x_train, x_test, y_train, y_test = train_test_split(df_x_train, df_y_train, test_size=0.2, random_state=20)
+df_train, df_test = train_test_split(df, test_size=0.2, random_state=20)
+
+#creating categories of the income dataset
+df["income_Cat"] = pd.cut(df["median_income"], bins=[0., 1.5, 3.0, 4.5, 6., np.inf], labels=[1,2,3,4,5])
+df.income_Cat.hist()
+
+from sklearn.model_selection import StratifiedShuffleSplit
+split = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+
+for train_index, test_index in split.split(df, df["income_Cat"]):
+    strat_train_set = df.loc[train_index]
+    strat_test_set = df.loc[test_index]
+
+strat_test_set["income_Cat"].value_counts() / len(strat_test_set)
+
+#Visualizing the samples
+s_train_c = strat_train_set.copy()
+
+s_train_c.plot(kind="scatter", x="longitude", y ="latitude")
+s_train_c.plot(kind="scatter", x="longitude", y ="latitude", alpha=0.1)
+s_train_c.plot(kind="scatter", x="longitude", y ="latitude", alpha=0.4,
+    s=s_train_c["population"]/100, label="population", figsize=(10,7), 
+    c="median_house_value", cmap=plt.get_cmap("jet"), colorbar=True)
+
+plt.legend()
+
+corr_matrix = s_train_c.corr()
+
+sns.heatmap(corr_matrix)
+corr_matrix["median_house_value"].sort_values(ascending=False)

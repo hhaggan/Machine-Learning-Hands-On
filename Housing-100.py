@@ -124,3 +124,19 @@ df_predictionstree = tree_reg.predict(df_f)
 tree_mse = mean_squared_error(df_labels, df_predictionstree)
 tree_rmse = np.sqrt(tree_mse)
 print(tree_rmse)
+
+def display_scores(scores):
+    print("Scores: ", scores)
+    print("Mean: ", scores.mean)
+    print("Standard deviation: ", scores.std())
+
+from sklearn.model_selection import cross_val_score
+scores = cross_val_score(tree_reg, df_f, df_labels, scoring="neg_mean_squared_error", cv=10)
+tree_rmse_scores = np.sqrt(-scores)
+
+display_scores(tree_rmse_scores)
+
+lin_scores = cross_val_score(lin_reg, df_f, df_labels, scoring="neg_mean_squared_error", cv=10)
+lin_rmse_scores = np.sqrt(-scores)
+
+display_scores(lin_rmse_scores)

@@ -89,3 +89,38 @@ df_cat_encoded = ordinal_encoder.fit_transform(df_cat)
 
 cat_encoder = OneHotEncoder()
 df_cat_Ohot = cat_encoder.fit_transform(df_cat)
+
+# from sklearn.pipeline import Pipeline
+# from sklearn.preprocessing import StandardScaler
+
+# num_pipeline = Pipeline([
+#     ('imputer', SimpleImputer(strategy="median"),
+#     ('attribs_adder', CombinedAttributesAdder()),
+#     ('std_scaler', StandardScaler()),
+# ])
+
+# df_num_tr = num_pipeline.fit_transform(df_temp)
+
+# from sklearn.compose import ColumnTransformer
+# num_attribs = list(df_temp)
+# cat_attribs = ["ocean_proximity"]
+
+from sklearn.linear_model import LinearRegression
+lin_reg = LinearRegression()
+df_labels = df.median_house_value.copy()
+lin_reg.fit(df_f, df_labels)
+
+from sklearn.metrics import mean_squared_error
+df_predictions = lin_reg.predict(df_f)
+lin_mse = mean_squared_error(df_labels, df_predictions)
+lin_rmse = np.sqrt(lin_mse)
+print(lin_rmse)
+
+from sklearn.tree import DecisionTreeRegressor
+tree_reg = DecisionTreeRegressor()
+tree_reg.fit(df_f, df_labels)
+
+df_predictionstree = tree_reg.predict(df_f)
+tree_mse = mean_squared_error(df_labels, df_predictionstree)
+tree_rmse = np.sqrt(tree_mse)
+print(tree_rmse)

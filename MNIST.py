@@ -140,3 +140,4 @@ norm_conf_mx = conf_mtx / row_sums
 np.fill_diagonal(norm_conf_mx, 0)
 plt.matshow(norm_conf_mx, cmap=plt.cm.gray)
 plt.show()
+

@@ -130,7 +130,7 @@ cross_val_score(sgd_clf, x_train_scaled, y_train, cv=3, scoring="accuracy")
 y_train_pred = cross_val_predict(sgd_clf, x_train_scaled, y_train, cv=3)
 conf_mtx = confusion_matrix(y_train, y_train_pred)
 
-plt.matshow(conf_mtx, cmapt=plt.cm.gray)
+plt.matshow(conf_mtx, cmap=plt.cm.gray)
 plt.show()
 
 #Dividing the value in the confusion matrix by the number of images in the corresponding class

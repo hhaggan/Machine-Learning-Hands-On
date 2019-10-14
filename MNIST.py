@@ -58,9 +58,22 @@ from sklearn.metrics import confusion_matrix
 
 confusion_matrix(y_train, y_train_predict)
 
-from sklearn.metrics import precision_score, recall_score, f1_score
+# from sklearn.metrics import precision_score, recall_score, f1_score
 
-precision_score(y_train, y_train_predict)
-recall_score(y_train, y_train_predict)
-f1_score(y_train, y_train_predict)
+# precision_score(y_train, y_train_predict)
+# recall_score(y_train, y_train_predict)
+# f1_score(y_train, y_train_predict)
 
+from sklearn.metrics import roc_curve
+
+fpr, tpr, thresholds = roc_curve(y_train, y_score)
+
+def plot_roc_curve(fpr, tpr, label=None):
+    plt.plot(fpr, tpr, linewidth=2, label=label)
+    plt.plot([0,1], [0,1], 'k--')
+    plt.axis([0,1], [0,1])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+
+plot_roc_curve(fpr, tpr)
+plt.show()

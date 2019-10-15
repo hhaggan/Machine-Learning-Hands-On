@@ -13,14 +13,13 @@ x.shape
 
 y.shape
 
+y = y.astype(np.uint8)
 some_digit = x[0]
 some_digit_image = some_digit.reshape(28,28)
 
 plt.imshow(some_digit_image, cmap = mpl.cm.binary, interpolation="nearest")
 plt.axis("off")
 plt.show()
-
-y = y.astype(np.uint8)
 
 x_train, x_test, y_train, y_test = x[:60000], x[60000:], y[:60000], y[60000:]
 
@@ -140,4 +139,10 @@ norm_conf_mx = conf_mtx / row_sums
 np.fill_diagonal(norm_conf_mx, 0)
 plt.matshow(norm_conf_mx, cmap=plt.cm.gray)
 plt.show()
+
+from sklearn.metrics import classification_report
+
+clf_report = classification_report(y_train, y_train_predict, target_names=target_names)
+
+print(clf_report)
 

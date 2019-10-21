@@ -46,6 +46,19 @@ def replace_titles(name):
     else:
         return title
 
+def cabin_sep(data_cabin):
+    cabin_type = []
+
+    for i in range(len(data_cabin)):
+
+            if data_cabin.isnull()[i] == True: 
+                cabin_type.append('M') #missing cabin = M 
+            else:    
+                cabin = data_cabin[i]
+                cabin_type.append(cabin[:1]) 
+            
+    return cabin_type
+
 df_train['Title']=df_train['Name'].map(lambda x: GetTitles(x, titles))
 df_train['Title']=df_train.apply(replace_titles, axis=1)
 
@@ -53,15 +66,12 @@ df_train['Title']=df_train.apply(replace_titles, axis=1)
 cabins = ['A', 'B', 'C', 'D', 'E', 'F', 'T', 'G', 'Unknown']
 df_train['Deck'] = df_train['Cabin'].map(lambda x: GetTitles(str(x), cabins))
 
-#identifying the cateforical columns
-cat_features = ["Parch", "Pclass", "Sex", "Embarked", "Title"]
-
 #Creating new family_size column
 df_train['Family_Size']=df_train['SibSp']+df_train['Parch']
 
 #visualizing the data
-sns.barplot(x= df_train_y["Survived"].value_counts().index, 
-    y=df_train_y["Survived"].value_counts())
+sns.barplot(x= df_train["Survived"].value_counts().index, 
+    y=df_train["Survived"].value_counts())
 
 sns.barplot(x=df_train.Embarked.value_counts().index, 
     y=df_train.Embarked.value_counts())
@@ -119,31 +129,17 @@ missing_age_rows2 = copy5.Age.isna()
 age_by_pclass_SibSp = copy5.groupby(['Pclass', 'SibSp']).median()['Age']
 age_by_pclass_SibSp[1].index.tolist()
 age_by_pclass_SibSp[3][8] = age_by_pclass_SibSp[3][5]
-for pclass in range(1, 4):
-    for siblings in age_by_pclass_SibSp[pclass].index.tolist():
-        print('Median age of Pclass {} with {} siblings: {}'.format(pclass, siblings, age_by_pclass_SibSp[pclass][siblings]))
-# print('Median age of all passengers: {}'.format(copy5['Age'].median()))
-copy5['Age'] = copy5.groupby(['Pclass', 'SibSp'])[
-    'Age'].apply(lambda x: x.fillna(x.median()))
-copy5['Age'] = copy5.Age.fillna(11) #think this step cause no values for NA value.
+
+copy5['Age'] = copy5.groupby(['Pclass', 'SibSp'])['Age'].apply(lambda x: x.fillna(x.median()))
+copy5['Age'] = copy5.Age.fillna(11)
 
 df_train = copy5
+
+df_train['Deck'] = df_train['Deck'].fillna('M').astype(str).apply(lambda cabin: cabin[0])
 
 #running a correlation
 corr = df_train.corr()
 sns.heatmap(corr, annot=True)
-
-# df_train_x = df_train.copy()
-df_train_x = df_train.drop(columns='Survived')
-df_train_y = pd.Series(df_train["Survived"])
-df_train_y = df_train_y.to_frame()
-
-#imputer 
-# from sklearn.impute import SimpleImputer
-# imputer = SimpleImputer(startegy='mean', copy=False)
-
-# imputer = imputer.fit(result)
-# imputer = imputer.transform(result)
 
 #test dataset
 
@@ -172,8 +168,40 @@ df_test['Family_Size']=df_test['SibSp']+df_test['Parch']
 df_test.Fare = df_test.Fare.fillna(df_test['Fare'].median())
 
 test_age_by_pclass_SibSp = df_test.groupby(['Pclass', 'SibSp']).median()['Age']
-test_age_by_pclass_SibSp
+
 df_test['Age'] = df_test.groupby(['Pclass', 'SibSp'])['Age'].apply(lambda x: x.fillna(x.median()))
+
+idx = df_train[df_train['Cabin'] == 'T'].index
+df_train.loc[idx, 'Cabin'] = 'A'
+df_train.Cabin.value_counts()
+df_test['Cabin'] = df_test['Cabin'].fillna('M').astype(str).apply(lambda cabin: cabin[0])
+
+# start
+
+#removing some data
+df_train = df_train.drop("Cabin", axis=1)
+
+#OneHotEncoder
+
+#identifying the cateforical columns
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+
+cat_features = ["Parch", "Pclass", "Sex", "Embarked", "Title", "Deck"]
+categorical_Transformer = Pipeline(steps=[
+    ('onehot', OneHotEncoder(handle_unknown='ignore'))
+])
+
+preprocessor = ColumnTransformer(
+    [('cat', categorical_Transformer, cat_features)])
+
+df = pd.DataFrame(preprocessor.fit_transform(df_train).toarray())
+
+# df_train_x = df_train.copy()
+df_train_x = df.drop(columns='Survived')
+df_train_y = pd.Series(df["Survived"])
+df_train_y = df.to_frame()
 
 #Pipeline
 from sklearn.ensemble import RandomForestClassifier

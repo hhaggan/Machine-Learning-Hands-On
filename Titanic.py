@@ -214,13 +214,13 @@ x_train, x_test, y_train, y_test = train_test_split(features, target, random_sta
 numerical_features = features.dtypes == 'float'
 categorical_features = ~numerical_features
 
-preprocess = make_column_transformer(
+preprocess = ColumnTransformer(transformers=[
     (numerical_features, make_pipeline(SimpleImputer(), StandardScaler())),
-    (categorical_features, OneHotEncoder()))
+    (categorical_features, OneHotEncoder(handle_unknown='ignore'))])
 
-model = make_pipeline(
-    preprocess,
-    LogisticRegression())
+model = Pipeline(steps=[
+    ('preprocessor', preprocess),
+    ('classifier', LogisticRegression())])
 
 model.fit(x_train, y_train)
 print("logistic regression score: %f" % model.score(x_test, y_test))
@@ -228,18 +228,24 @@ print("logistic regression score: %f" % model.score(x_test, y_test))
 #Pipeline
 from sklearn.ensemble import RandomForestClassifier
 
-forest_clf = RandomForestClassifier(random_state=42)
-forest_clf.fit(df_train_x, df_train_y)
+forest_clf = make_pipeline(preprocess, RandomForestClassifier(random_state=42))
+
+forest_clf.fit(x_train, y_train)
+print("Random Forest Classifier: %f" % forest_clf.score(x_test, y_test))
 
 #KNN
 from sklearn.neighbors import KNeighborsClassifier
 
-knn_clf = KNeighborsClassifier(n_neighbors=3)
-knn_clf.fit(df_train_x, df_train_y)
+knn_clf = make_pipeline(preprocess, KNeighborsClassifier(n_neighbors=3))
+knn_clf.fit(x_train, y_train)
+
+print("KNN  Classifier: %f" % knn_clf.score(x_test, y_test))
 
 #Decision Tree
 from sklearn. tree import DecisionTreeClassifier
 
-#clf = DecisionTreeClassifier(random_state=42, criterion="entropy", max_depth=3, max_leaf_nodes=15)
-clf = DecisionTreeClassifier(random_state=42, criterion="entropy", max_leaf_nodes=15)
-clf.fit(df_train_x, df_train_y)
+clf = make_pipeline(preprocess, DecisionTreeClassifier(random_state=42, criterion="entropy", max_leaf_nodes=15))
+
+clf.fit(x_train, y_train)
+print("KNN  Classifier: %f" % clf.score(x_test, y_test))
+

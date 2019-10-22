@@ -174,34 +174,88 @@ df_test['Age'] = df_test.groupby(['Pclass', 'SibSp'])['Age'].apply(lambda x: x.f
 idx = df_train[df_train['Cabin'] == 'T'].index
 df_train.loc[idx, 'Cabin'] = 'A'
 df_train.Cabin.value_counts()
-df_test['Cabin'] = df_test['Cabin'].fillna('M').astype(str).apply(lambda cabin: cabin[0])
+
+df_test['Deck'] = df_test['Deck'].fillna('M').astype(str).apply(lambda cabin: cabin[0])
 
 # start
 
 #removing some data
 df_train = df_train.drop("Cabin", axis=1)
+df_train = df_train.drop(columns='Name', axis=1)
+df_train = df_train.drop(columns='PassengerId', axis=1)
+df_train = df_train.drop(columns='SibSp', axis=1)
+df_train = df_train.drop(columns='Ticket', axis=1)
+df_train_x = df_train.drop(columns='Survived', axis=1)
 
+df_test = df_test.drop(columns='SibSp', axis=1)
+df_test = df_test.drop(columns='PassengerId', axis=1)
+df_test = df_test.drop(columns='Ticket', axis=1)
+df_test = df_test.drop(columns='Name', axis=1)
+df_test_y = df_test_y.drop(["PassengerId"], axis=1)
+df_test = df_test.drop("Cabin", axis=1)
 #OneHotEncoder
 
-#identifying the cateforical columns
-from sklearn.preprocessing import OneHotEncoder, LabelEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-
-cat_features = ["Parch", "Pclass", "Sex", "Embarked", "Title", "Deck"]
-categorical_Transformer = Pipeline(steps=[
-    ('onehot', OneHotEncoder(handle_unknown='ignore'))
-])
-
-preprocessor = ColumnTransformer(
-    [('cat', categorical_Transformer, cat_features)])
-
-df = pd.DataFrame(preprocessor.fit_transform(df_train).toarray())
-
 # df_train_x = df_train.copy()
-df_train_x = df.drop(columns='Survived')
-df_train_y = pd.Series(df["Survived"])
-df_train_y = df.to_frame()
+df_train_y = pd.Series(df_train["Survived"])
+df_train_y = df_train_y.to_frame()
+
+#identifying the cateforical columns
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer, make_column_transformer
+from sklearn.pipeline import Pipeline
+from sklearn.pipeline import make_pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.impute import SimpleImputer
+
+target = df_train_y.copy()
+features = df_train_x[['Pclass', 'Sex', 'Age', 'Parch', 'Fare', 'Embarked', 'Title', 'Deck', 'Family_Size']].copy()
+
+numerical_features = features.dtypes == 'float'
+categorical_features = ~numerical_features
+
+preprocess = make_column_transformer(
+    (numerical_features, make_pipeline(SimpleImputer(), StandardScaler())),
+    (categorical_features, OneHotEncoder()))
+
+model = make_pipeline(
+    preprocess,
+    LogisticRegression())
+
+preprocess2 = make_pipeline(preprocess)
+preprocess2.fit_transform(df_test) 
+
+model.fit(df_train_x, df_train_y)
+print("logistic regression score: %f" % model.score(df_test, df_test_y))
+
+# df2 = df_train_x.copy()
+
+# target = df_train_y.copy()
+# features = df2[['Pclass', 'Sex', 'Age', 'Fare', 'Embarked']].copy()
+
+# numerical_features = df2.dtypes == 'float'
+# categorical_features = ~numerical_features
+
+# preprocess1 = make_column_transformer(
+#     (['Age', 'Fare'], StandardScaler()),
+#     (['Pclass', 'Sex', 'Embarked'], OneHotEncoder())
+# )
+
+# preprocess1.fit_transform(df2)[:5]
+# preprocess1.fit_transform(df_test)[:5]
+
+# preprocess2 = make_column_transformer(
+#     (numerical_features, make_pipeline(SimpleImputer(), StandardScaler())),
+#     (categorical_features, OneHotEncoder()))
+
+# model = make_pipeline(
+#     preprocess1, preprocess2,
+#     LogisticRegression())
+
+# model.fit(df2, target)
+
+# print("logistic regression score: %f" % model.score(df_test, df_test_y))
+
+#df = pd.DataFrame(preprocessor.fit_transform(df_train).toarray())
 
 #Pipeline
 from sklearn.ensemble import RandomForestClassifier

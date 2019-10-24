@@ -31,3 +31,27 @@ polynominal_svm_clf = Pipeline([
 polynominal_svm_clf.fit(x, y)
 
 polynominal_svm_clf.predict([[5.5, 1.7]])
+
+#adding new parameters
+from sklearn.svm import SVC
+
+poly_kernel_svc_clf = Pipeline([
+    ("scaler", StandardScaler()),
+    ("svc_clf", SVC(kernel='poly', degree=3, coef0=1, C=5))
+])
+
+polynominal_svm_clf.fit(x, y)
+
+polynominal_svm_clf.predict([[5.5, 1.7]])
+
+#linear kernel
+from sklearn.svm import SVC
+
+poly_kernel_svc_clf = Pipeline([
+    ("scaler", StandardScaler()),
+    ("svc_clf", SVC(kernel='linear', degree=10, coef0=1, C=5))
+])
+
+polynominal_svm_clf.fit(x, y)
+
+polynominal_svm_clf.predict([[5.5, 1.7]])

@@ -1,5 +1,7 @@
 import pandas as pd
-import numpy as np 
+import numpy as np
+from scipy import spatial
+from sklearn.metrics.pairwise import *
 
 df = pd.DataFrame(data={'Zin': [7,0,3,2,5], 
                         'Pinot Noir': [6,7,3,2,6],
@@ -10,7 +12,17 @@ df = pd.DataFrame(data={'Zin': [7,0,3,2,5],
 
 df.index = ['Yuri', 'Steve', 'Gary', 'Qurat', 'Brigid']
 
-from sklearn.metrics.pairwise import *
-
+#Cosine
 #np.around(cosine_similarity(df), 2)
-np.around(cosine_distances(df), 2)
+np.around(cosine_distances([df.iloc[1]], [df.iloc[2]]), 3)
+
+spatial.distance.cosine(df.iloc[1], df.iloc[2])
+
+#Euclidian
+spatial.distance.euclidean(df.iloc[1], df.iloc[2])
+
+np.around(euclidean_distances([df.iloc[1]], [df.iloc[2]]), 3)
+
+#Jaccard Similarity
+spatial.distance.jaccard(df.iloc[1], df.iloc[2])
+

@@ -25,4 +25,3 @@ np.around(euclidean_distances([df.iloc[1]], [df.iloc[2]]), 3)
 
 #Jaccard Similarity
 spatial.distance.jaccard(df.iloc[1], df.iloc[2])
-
